@@ -1,14 +1,16 @@
 {
   "name": "codex-delete-only",
-  "version": "1.0.0",
+  "version": "2.0.0",
   "private": true,
   "repository": {
     "type": "git",
     "url": "https://github.com/Ssshake1996/agentchat_del.git"
   },
   "type": "module",
-  "description": "Codex desktop sidebar delete button with an explicit confirmation dialog.",
-  "engines": { "node": ">=22.4.0" },
+  "description": "Standard Codex plugin for confirmed deletion of other unloaded local chats; includes the original sidebar launcher.",
+  "engines": {
+    "node": ">=22.4.0"
+  },
   "scripts": {
     "start": "node src/launcher.mjs",
     "doctor": "node src/launcher.mjs --doctor",

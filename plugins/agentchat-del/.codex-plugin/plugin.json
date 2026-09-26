@@ -1,0 +1,19 @@
+{
+  "name": "agentchat-del",
+  "version": "2.0.0",
+  "description": "确认后永久删除其他未加载的本机 Codex 会话，禁止自删，不创建备份。",
+  "author": { "name": "Ssshake1996" },
+  "repository": "https://github.com/Ssshake1996/agentchat_del",
+  "license": "AGPL-3.0-only",
+  "skills": "./skills/",
+  "mcpServers": "./.mcp.json",
+  "interface": {
+    "displayName": "AgentChat Delete",
+    "shortDescription": "确认后删除其他 Codex 历史会话",
+    "longDescription": "在 A 对话中查找并删除 B 对话。禁止自删；目标及派生子会话必须未被桌面加载。每次永久删除都需要用户确认，不创建备份。不支持云端 ChatGPT 聊天。",
+    "developerName": "Ssshake1996",
+    "category": "Productivity",
+    "capabilities": ["Write"],
+    "defaultPrompt": ["帮我查找要删除的 Codex 历史会话"]
+  }
+}

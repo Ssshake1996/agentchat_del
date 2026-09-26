@@ -1,0 +1,12 @@
+{
+  "mcpServers": {
+    "agentchat_del": {
+      "command": "node",
+      "args": ["./src/server.mjs"],
+      "cwd": ".",
+      "env_vars": ["CODEX_APP_TOOLS_PIPE_PATH", "CODEX_HOME", "CODEX_SQLITE_HOME", "CODEX_CLI_PATH"],
+      "startup_timeout_sec": 10,
+      "tool_timeout_sec": 360
+    }
+  }
+}

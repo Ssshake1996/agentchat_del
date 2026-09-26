@@ -1,78 +1,76 @@
 # agentchat_del
 
-Codex Delete Only：仅提供会话删除功能的轻量扩展。
+**AgentChat Delete：在 A 对话中确认删除 B 对话的标准 Codex 插件。** 只有会话查找与删除，不创建本地备份，不需要专用启动器。
 
-Windows 版 Codex 桌面侧边栏删除扩展。**只有会话删除功能，不生成本地备份。**
-
-鼠标移到侧边栏会话上，点击垃圾桶按钮，核对标题和子会话范围，再点击 **删除**。删除后无法撤销。按 `Esc` 或点击 **取消** 不执行删除。
+支持 Windows 上 ChatGPT 桌面中的 **Codex 本地聊天/任务**。不支持普通 ChatGPT 云端聊天、网页端或远程主机。插件 ID 为 `agentchat-del`，GitHub 仓库名保持 `agentchat_del`。
 
 ## 使用
 
-1. 安装 Node.js **22.4 或更新版本**。本项目没有 npm 依赖，不需要 `npm install`。
-2. 克隆本仓库，或下载源码并解压到固定位置。
-3. 等待正在运行的任务完成，退出所有 Codex 桌面窗口。
-4. 双击 **启动删除版Codex.vbs**。它会启动官方 Codex，并加载侧边栏删除按钮。
+在一个新聊天中说：
 
-以后从这个入口启动即可。从官方入口启动时不加载扩展。启动器不会强制结束正在运行的 Codex。
+> 使用 AgentChat Delete，查找标题包含“测试”的 Codex 历史会话。
 
-可选：在本目录的 PowerShell 中执行 `powershell -NoProfile -ExecutionPolicy Bypass -File .\install.ps1`，创建桌面快捷方式。安装器仅创建快捷方式，不修改 Codex 安装文件。移动文件夹后需重新创建快捷方式。
+选择明确的目标后，插件显示原始标题、会话 ID 和将被一并删除的派生子会话。勾选 **确认永久删除** 并提交才会删除。取消、关闭或确认超时都不删除。
 
-## 删除范围
+- **A 删 B，禁止 A 删 A**；如果 B 的派生子会话中包含 A，同样拒绝。
+- 只接受桌面实际状态为 `notLoaded` 的目标及其全部派生子会话。运行中、仍加载的 `idle`、未知或异常状态都会拒绝。
+- 若提示目标仍被加载，请结束任务并正常退出、重新打开桌面，从其他聊天删除，期间不要再打开目标。无需使用旧版启动器。
+- 删除包含派生子会话，独立 fork 不属于这个范围。
+- 不归档中转、不创建备份、不删除项目或 worktree 文件。删除不能撤销。
+- 删除成功后会验证记录及索引均已消失。侧边栏如仍显示缓存，正常重启桌面刷新；不要直接重复删除。
 
-- 仅处理本机 Codex 会话；不操作 ChatGPT 聊天、旧云任务或远程主机。
-- 调用当前 Codex 窗口连接的原生 `thread/delete`，由 Codex 自身清理会话存储并刷新列表。
-- 原生接口会连同派生的子会话删除；确认框展示具体影响范围。独立 fork 不等于 spawned 子会话。
-- 当前打开的会话、运行中的会话，以及包含这些会话的父会话，均拒绝删除。先切换到其他会话，或等待任务完成。
-- 不读取项目文件，不删除工作目录或 worktree，不写登录、模型或供应商配置。
-- 不创建聊天备份、不提供撤销。运行日志只包含启动状态及错误。
+## 安装
 
-## 环境与兼容性
+需要 Windows、支持插件与 MCP 确认表单的 Codex 桌面、可运行的 `codex` CLI，以及 Node.js **22.4 或更新版本**。没有 npm 依赖，不必 `npm install`。
 
-参考 CodexPlusPlus 的 CDP 注入方式和侧边栏定位方式，删除动作使用官方 App 已有接口；不打包原项目的供应商、主题、导出等功能，不修改 `app.asar`。
-
-已依据本机 **Codex 26.924.2738.0 / codex-cli 0.151.0** 的程序结构适配。此版本菜单本身也有原生“永久删除”；本扩展提供直接显示在会话行上的删除按钮。不同版本更新可能改变 DOM 或消息接口；无法识别时不猜测目标、不直接修改 SQLite。本项目通过独立启动器注入侧边栏，不需要在插件市场安装。
-
-启动器使用本机回环调试端口 `127.0.0.1:19379`。不提供 HTTP 删除服务，不监听局域网地址。关闭 Codex 后启动器自动退出。临时诊断与启动日志位于 `%LOCALAPPDATA%\CodexDeleteOnly`。
-
-查看诊断（只读，不注入或删除）：
+克隆/下载本仓库后，在仓库根目录运行：
 
 ```powershell
-node .\src\launcher.mjs --doctor
+powershell -NoProfile -ExecutionPolicy Bypass -File .\install-plugin.ps1
 ```
 
-手动指定桌面程序或端口：
+安装器将插件复制到 `%USERPROFILE%\plugins\agentchat-del`，添加默认个人市场条目，然后通过 `codex plugin add` 安装并启用。它保留其他插件与市场条目，不修改 Codex 程序文件。
 
-```powershell
-powershell -NoProfile -ExecutionPolicy Bypass -File .\launcher.ps1 -Executable 'C:\path\Codex\Codex.exe' -Port 19380
-```
+**安装后新开一个 Codex 聊天**，让技能和 MCP 工具加载。现有聊天不会自动得到新工具。可在插件页搜索 **AgentChat Delete** 查看。
 
-`-Executable` 必须指向桌面程序（同目录有 `resources\app.asar`），不是命令行 `codex.exe`。默认自动识别 Microsoft Store 的 `OpenAI.Codex` 包，兼容桌面程序名 `ChatGPT.exe` 与 `Codex.exe`。
+卸载：在插件页卸载，或运行 `codex plugin remove agentchat-del@personal`。如果个人市场已有其他名称，请使用实际的市场名。
 
-如果普通 Codex 已打开而调试端口不可用，启动器会提示先退出，不强制重启。删除请求若超时，结果可能已生效，应先核对列表，不自动重试。
+## 实现与边界
 
-## 开发与验证
+标准插件在 `plugins/agentchat-del/`，包括 `.codex-plugin/plugin.json`、`.mcp.json`、技能和零依赖的 stdio MCP 服务，只提供两个工具：
+
+| 工具 | 用途 |
+| --- | --- |
+| `search_chats` | 按标题查找会话，最多返回 30 条 |
+| `delete_chat` | 展示完整范围，等待用户确认，复查后永久删除 |
+
+当前调用者来自 Codex 执行器提供的 MCP 元数据，工具参数不能指定调用者或伪造确认。确认通过 MCP elicitation 表单完成；客户端不支持表单时停止，不降级为 `confirmed: true` 参数。
+
+插件通过桌面本机 pipe 的只读 `read_thread` 核实真实运行状态，通过同一数据目录的 Codex 原生 app-server 调用 `thread/read`、`thread/list`、`thread/delete`。不自行修改 SQLite 或 JSONL。独立 app-server 的状态不能代表桌面的状态，因此必须额外校验桌面。原生跨进程写锁会阻止删除另一个进程持有的会话。
+
+确认后重新检查会话修订、子会话范围和桌面状态。接口超时或结果不确定时，明确报错且不自动重试。桌面内部只读连接及原生协议可能随版本变化；不兼容时停止操作。
+
+插件只访问本机：元数据及删除操作不发送到第三方服务。桌面 `read_thread` 的返回值仅取身份与状态，工具结果只包含候选标题/ID/时间或删除结果。不会持久化聊天内容或备份。
+
+## 验证
 
 ```powershell
 npm test
-node --check .\renderer\ui.js
-node --check .\renderer\engine.js
-node --check .\renderer\bridge.js
-node .\src\launcher.mjs --doctor
+node .\tests\native-plugin-smoke.mjs 'C:\完整路径\codex.exe'
 ```
 
-`tests/ui-fixture.html` 是使用假会话的界面测试页，所有数据仅存在该页面内。原生删除验证在独立的临时 `CODEX_HOME` 下进行，不删除使用者的真实会话。当前 Codex 正在承载开发会话，未强行重启它做真实桌面端到端删除验证。
+第二条命令接受 **Codex 原生命令行二进制**的绝对路径，只使用新建临时数据目录、离线测试供应商和无模型调用的假会话，验证写锁、真实删除、记录消失与项目文件保留。默认测试不会操作实际聊天。详情见 [TESTING.md](TESTING.md)。
 
-需要重跑原生集成检查时，执行 `node .\tests\native-smoke.mjs 'C:\完整路径\codex.exe'`，此处参数为 **Codex CLI**。该脚本始终创建独立临时目录，不发起模型请求；默认测试不运行它。
+修改已经安装的同版本本地插件时，应按 Codex `plugin-creator` 的 cachebuster + reinstall 流程更新安装副本，之后新开聊天测试；仅编辑仓库源文件不会热更新安装缓存。
 
-状态检查与原生删除不是一个原子操作；请勿在另一个窗口恰好同时启动准备删除的任务。接口没有条件删除参数，插件不会承诺消除这一极短竞态。
+## 旧版侧边栏扩展
 
-## 移除
+原来的侧边栏按钮/专用启动器代码仍保留，标准插件不加载它。需要侧边栏方式可看 [旧版说明](docs/sidebar-launcher.md)，两种使用形式不必同时启用。
 
-退出 Codex，移除本项目文件夹和自行创建的快捷方式即可。官方程序、会话配置无需恢复。`%LOCALAPPDATA%\CodexDeleteOnly` 中的诊断日志可以自行删除。
+## 来源与许可
 
-## 来源
+- [CodexPlusPlus](https://github.com/BigPizzaV3/CodexPlusPlus/tree/693c8486bafb0f98e2539c455335d3d2fd42ce00)：原侧边栏实现参考。
+- [OpenAI 插件打包说明](https://developers.openai.com/plugins/build/plugins)。
+- [Codex 原生删除](https://github.com/openai/codex/blob/rust-v0.151.0/codex-rs/app-server/src/request_processors/thread_delete.rs)与[跨进程写锁](https://github.com/openai/codex/blob/rust-v0.151.0/codex-rs/thread-store/src/local/writer_lock.rs)。
 
-- [CodexPlusPlus](https://github.com/BigPizzaV3/CodexPlusPlus/tree/693c8486bafb0f98e2539c455335d3d2fd42ce00)：参考实现，AGPL-3.0-only。
-- [OpenAI Codex 原生 thread/delete 实现](https://github.com/openai/codex/blob/rust-v0.151.0/codex-rs/app-server/src/request_processors/thread_delete.rs)。
-
-本项目以 AGPL-3.0-only 提供源码。见 `LICENSE` 与 `THIRD_PARTY_NOTICES.md`。
+非官方插件，以 AGPL-3.0-only 提供源码，见 `LICENSE` 与 `THIRD_PARTY_NOTICES.md`。不分发 OpenAI 程序、认证资料或聊天记录。
